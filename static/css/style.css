@@ -25,6 +25,22 @@
     --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.15);
 }
 
+body.light-theme {
+    --bg-main: #f8fafc;
+    --bg-sidebar: #f1f5f9;
+    --bg-card: rgba(255, 255, 255, 0.8);
+    --bg-card-hover: rgba(255, 255, 255, 0.95);
+    --border-color: rgba(0, 0, 0, 0.08);
+    --border-color-hover: rgba(0, 0, 0, 0.15);
+    
+    --text-primary: #0f172a;
+    --text-secondary: #475569;
+    --text-muted: #64748b;
+    
+    --shadow-premium: 0 10px 30px -10px rgba(0, 0, 0, 0.05), 0 1px 1px rgba(255, 255, 255, 0.8) inset;
+    --shadow-glow: 0 0 20px rgba(99, 102, 241, 0.05);
+}
+
 /* Reset and Global Styles */
 * {
     margin: 0;
@@ -1173,4 +1189,168 @@ body {
     .style-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* Theme Toggle Button */
+.btn-theme-toggle {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+}
+
+.btn-theme-toggle:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: rgba(255, 255, 255, 0.15);
+    color: white;
+}
+
+.btn-theme-toggle i {
+    width: 18px;
+    height: 18px;
+}
+
+/* Copy button on card */
+.btn-card-action.copy-btn:hover {
+    background: rgba(16, 185, 129, 0.15);
+    border-color: rgba(16, 185, 129, 0.4);
+    color: var(--accent-green);
+}
+
+/* Light Theme Component Overrides */
+body.light-theme .glow-orb {
+    opacity: 0.04;
+}
+
+body.light-theme .nav-item:hover {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+body.light-theme .nav-item.active {
+    color: var(--accent-indigo);
+    background: linear-gradient(to right, rgba(99, 102, 241, 0.08), rgba(6, 182, 212, 0.02));
+}
+
+body.light-theme #search-input {
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--text-primary);
+}
+
+body.light-theme #search-input:focus {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .btn-secondary {
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--text-secondary);
+}
+
+body.light-theme .btn-secondary:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
+}
+
+body.light-theme .btn-card-action {
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--text-secondary);
+}
+
+body.light-theme .btn-card-action:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
+}
+
+body.light-theme .modal-card {
+    background: #ffffff;
+    border-color: rgba(0, 0, 0, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15), 0 0 40px rgba(99, 102, 241, 0.05);
+}
+
+body.light-theme .selected-update-preview {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.light-theme #tweet-textarea {
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--text-primary);
+}
+
+body.light-theme #tweet-textarea:focus {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .mock-tweet-card {
+    background: #f8fafc;
+    border-color: rgba(0, 0, 0, 0.08);
+}
+
+body.light-theme .mock-name {
+    color: var(--text-primary);
+}
+
+body.light-theme .composer-meta .char-counter {
+    background: #ffffff;
+}
+
+body.light-theme .modal-close {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.light-theme .modal-close:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+body.light-theme .style-btn {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.light-theme .style-btn:hover {
+    background: rgba(0, 0, 0, 0.04);
+}
+
+body.light-theme .style-btn.active {
+    background: rgba(99, 102, 241, 0.08);
+}
+
+body.light-theme .tech-badge {
+    background: rgba(0, 0, 0, 0.02);
+}
+
+body.light-theme .toast {
+    background: #ffffff;
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme .note-card-body code {
+    background: rgba(0, 0, 0, 0.05);
+    color: #1e293b;
+}
+
+body.light-theme ::-webkit-scrollbar-track {
+    background: var(--bg-main);
+}
+
+body.light-theme ::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.1);
+}
+
+body.light-theme ::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+body.light-theme .btn-theme-toggle {
+    background: rgba(0, 0, 0, 0.02);
+    color: var(--text-secondary);
+}
+
+body.light-theme .btn-theme-toggle:hover {
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text-primary);
 }

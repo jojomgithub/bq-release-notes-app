@@ -14,6 +14,9 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 // DOM Elements
 const elements = {
+    themeToggle: document.getElementById('theme-toggle'),
+    themeIcon: document.getElementById('theme-icon'),
+    exportCsvBtn: document.getElementById('export-csv-btn'),
     refreshBtn: document.getElementById('refresh-btn'),
     refreshIcon: document.getElementById('refresh-icon'),
     searchInput: document.getElementById('search-input'),
@@ -51,6 +54,16 @@ const elements = {
 
 // Initialize Application
 document.addEventListener('DOMContentLoaded', () => {
+    // Theme initialization
+    const savedTheme = localStorage.getItem('theme') || 'dark';
+    if (savedTheme === 'light') {
+        document.body.classList.add('light-theme');
+        elements.themeIcon.setAttribute('data-lucide', 'sun');
+    } else {
+        document.body.classList.remove('light-theme');
+        elements.themeIcon.setAttribute('data-lucide', 'moon');
+    }
+    
     // Setup Lucide icons initially
     lucide.createIcons();
     
@@ -58,6 +71,8 @@ document.addEventListener('DOMContentLoaded', () => {
     elements.refreshBtn.addEventListener('click', fetchReleaseNotes);
     elements.retryBtn.addEventListener('click', fetchReleaseNotes);
     elements.searchInput.addEventListener('input', handleSearch);
+    elements.themeToggle.addEventListener('click', toggleTheme);
+    elements.exportCsvBtn.addEventListener('click', exportCurrentViewToCSV);
     
     elements.navItems.forEach(item => {
         item.addEventListener('click', (e) => {
@@ -326,6 +341,9 @@ function renderTimeline() {
                         <a href="${update.link}" target="_blank" class="btn-card-action" title="View official release page">
                             <i data-lucide="external-link"></i>
                         </a>
+                        <button class="btn-card-action copy-btn" title="Copy update text to clipboard">
+                            <i data-lucide="copy" class="copy-card-icon"></i>
+                        </button>
                         <button class="btn-card-action tweet-btn" title="Tweet about this update">
                             <i data-lucide="twitter"></i>
                         </button>
@@ -335,6 +353,10 @@ function renderTimeline() {
                     ${update.content}
                 </div>
             `;
+            
+            // Attach Copy Button Click
+            const copyBtn = cardEl.querySelector('.copy-btn');
+            copyBtn.addEventListener('click', () => copyCardText(update, copyBtn));
             
             // Attach Tweet Button Click
             const tweetBtn = cardEl.querySelector('.tweet-btn');
@@ -589,4 +611,98 @@ function showToast(message, isError = false) {
     setTimeout(() => {
         elements.toast.classList.add('hidden');
     }, 3000);
+}
+
+// Toggle page color scheme (Dark / Light mode)
+function toggleTheme() {
+    const isLight = document.body.classList.toggle('light-theme');
+    localStorage.setItem('theme', isLight ? 'light' : 'dark');
+    
+    // Update theme toggle icon
+    elements.themeIcon.setAttribute('data-lucide', isLight ? 'sun' : 'moon');
+    lucide.createIcons();
+    
+    showToast(`Switched to ${isLight ? 'Light' : 'Dark'} Theme`);
+}
+
+// Copy single release note update card text
+async function copyCardText(update, btn) {
+    const plainText = stripHtml(update.content).trim();
+    try {
+        await navigator.clipboard.writeText(plainText);
+        showToast('Copied update to clipboard!');
+        
+        // Temporarily change icon to checkmark for success feedback
+        const icon = btn.querySelector('i');
+        icon.setAttribute('data-lucide', 'check');
+        btn.style.color = 'var(--accent-green)';
+        btn.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        lucide.createIcons();
+        
+        setTimeout(() => {
+            icon.setAttribute('data-lucide', 'copy');
+            btn.style.color = '';
+            btn.style.borderColor = '';
+            lucide.createIcons();
+        }, 2000);
+    } catch (err) {
+        console.error('Clipboard copy failed:', err);
+        showToast('Failed to copy to clipboard', true);
+    }
+}
+
+// Export the currently visible (filtered & searched) release notes to a CSV file
+function exportCurrentViewToCSV() {
+    const filteredUpdates = getFilteredUpdates();
+    if (filteredUpdates.length === 0) {
+        showToast('No updates to export!', true);
+        return;
+    }
+    
+    // Escaper function for CSV cells
+    function escapeCSV(text) {
+        if (text == null) return '';
+        let cleaned = text.toString().replace(/"/g, '""');
+        return `"${cleaned}"`;
+    }
+    
+    // Header definition
+    let csvContent = 'Date,Category,Documentation Link,Description\r\n';
+    
+    // Populate CSV rows
+    filteredUpdates.forEach(update => {
+        // Strip tags and normalize white space to prevent multi-line rows
+        const plainDesc = stripHtml(update.content).replace(/\s+/g, ' ').trim();
+        const row = [
+            update.date,
+            update.type,
+            update.link,
+            plainDesc
+        ].map(escapeCSV).join(',');
+        
+        csvContent += row + '\r\n';
+    });
+    
+    // Initiate browser download
+    try {
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        
+        // Build descriptive filename based on active filters
+        const searchLabel = state.searchQuery ? `_search_${state.searchQuery.replace(/[^a-zA-Z0-9]/g, '_')}` : '';
+        const filename = `bigquery_release_notes_${state.activeFilter}${searchLabel}.csv`;
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', filename);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        showToast(`Exported ${filteredUpdates.length} updates to CSV!`);
+    } catch (err) {
+        console.error('CSV export failed:', err);
+        showToast('Failed to export CSV', true);
+    }
 }
