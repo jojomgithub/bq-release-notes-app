@@ -56,6 +56,7 @@ body {
     overflow-x: hidden;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Base Scrollbar Customization */
@@ -116,6 +117,7 @@ body {
     position: fixed;
     height: 100vh;
     z-index: 10;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .sidebar-header {
@@ -403,6 +405,15 @@ body {
 .feed-container {
     position: relative;
     min-height: 300px;
+}
+
+.results-count {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    font-weight: 500;
+    padding-left: 4px;
+    letter-spacing: 0.25px;
 }
 
 .loading-state, .error-state, .empty-state {
@@ -1353,4 +1364,20 @@ body.light-theme .btn-theme-toggle {
 body.light-theme .btn-theme-toggle:hover {
     background: rgba(0, 0, 0, 0.05);
     color: var(--text-primary);
+}
+
+body.light-theme .day-title {
+    color: var(--text-primary);
+}
+
+body.light-theme .logo-text {
+    background: linear-gradient(to right, var(--text-primary), var(--text-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+body.light-theme .header-titles h1 {
+    background: linear-gradient(135deg, var(--text-primary) 30%, var(--text-muted));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
 }

@@ -30,6 +30,7 @@ const elements = {
     feedTimeline: document.getElementById('feed-timeline'),
     retryBtn: document.getElementById('retry-btn'),
     navItems: document.querySelectorAll('.nav-item'),
+    resultsCount: document.getElementById('results-count'),
     
     // Modal Elements
     tweetModal: document.getElementById('tweet-modal'),
@@ -225,14 +226,37 @@ function generateId() {
 }
 
 // Update Stats Board
-function updateStats() {
-    elements.statTotal.textContent = state.parsedUpdates.length;
+function updateStats(filteredUpdates) {
+    const targetSet = filteredUpdates || state.parsedUpdates;
+    elements.statTotal.textContent = targetSet.length;
     
-    const featureCount = state.parsedUpdates.filter(
+    const featureCount = targetSet.filter(
         u => u.type.toLowerCase().includes('feature')
     ).length;
     
     elements.statFeatures.textContent = featureCount;
+}
+
+// Update Results Count Indicator
+function updateResultsCount(filteredCount, totalCount) {
+    if (!elements.resultsCount) return;
+    
+    if (totalCount === 0 || filteredCount === 0) {
+        elements.resultsCount.classList.add('hidden');
+        return;
+    }
+    
+    elements.resultsCount.classList.remove('hidden');
+    if (filteredCount === totalCount) {
+        elements.resultsCount.textContent = `Showing all ${totalCount} updates`;
+    } else {
+        const filterCategory = state.activeFilter !== 'all' 
+            ? state.activeFilter.charAt(0).toUpperCase() + state.activeFilter.slice(1) + 's' 
+            : 'updates';
+        const filterText = state.activeFilter !== 'all' ? ` in ${filterCategory}` : '';
+        const searchText = state.searchQuery ? ` matching "${state.searchQuery}"` : '';
+        elements.resultsCount.textContent = `Showing ${filteredCount} of ${totalCount} updates${filterText}${searchText}`;
+    }
 }
 
 // Handle Filters
@@ -284,6 +308,10 @@ getFilteredUpdates = () => {
 // Render Timeline
 function renderTimeline() {
     const filtered = getFilteredUpdates();
+    
+    // Update stats and results count dynamically
+    updateStats(filtered);
+    updateResultsCount(filtered.length, state.parsedUpdates.length);
     
     if (filtered.length === 0) {
         elements.feedTimeline.classList.add('hidden');
@@ -418,6 +446,20 @@ function stripHtml(html) {
     return tmp.textContent || tmp.innerText || "";
 }
 
+// Calculate accurate character length for Twitter/X (URLs are counted as 23 characters)
+function calculateTwitterLength(text) {
+    if (!text) return 0;
+    const urlRegex = /https?:\/\/[^\s]+/g;
+    let length = text.length;
+    const matches = text.match(urlRegex);
+    if (matches) {
+        matches.forEach(url => {
+            length = length - url.length + 23;
+        });
+    }
+    return length;
+}
+
 // Tweet Composer Modal Controllers
 function openTweetModal(update) {
     state.selectedUpdate = update;
@@ -478,36 +520,42 @@ function regenerateTweetText() {
     
     // Base links & tags sizes
     const hashtags = ' #BigQuery #GoogleCloud';
+    const linkTwitterLength = 23;
     
     switch (state.currentStyle) {
-        case 'excited':
+        case 'excited': {
             const excitedIntro = `🚀 BigQuery updates! `;
-            const excitedBody = truncateText(cleanUpdateText, 280 - excitedIntro.length - link.length - hashtags.length - 8);
+            const footerTwitterLength = 10 + linkTwitterLength + hashtags.length; // "\n\nDetails: " is 10 chars
+            const excitedBody = truncateText(cleanUpdateText, 280 - excitedIntro.length - footerTwitterLength);
             tweetText = `${excitedIntro}${excitedBody}\n\nDetails: ${link}${hashtags}`;
             break;
-            
-        case 'bullet':
+        }
+        case 'bullet': {
             const bulletIntro = `📝 BigQuery release note (${date}):\n`;
-            const bulletBody = truncateText(cleanUpdateText, 280 - bulletIntro.length - link.length - hashtags.length - 8);
+            const footerTwitterLength = 7 + linkTwitterLength + hashtags.length; // "\n\nDocs: " is 7 chars
+            const bulletBody = truncateText(cleanUpdateText, 280 - bulletIntro.length - footerTwitterLength);
             tweetText = `${bulletIntro}• ${bulletBody}\n\nDocs: ${link}${hashtags}`;
             break;
-            
-        case 'technical':
+        }
+        case 'technical': {
             const techIntro = `⚙️ BQ API / Engine Update: `;
-            const techBody = truncateText(cleanUpdateText, 280 - techIntro.length - link.length - hashtags.length - 8);
+            const footerTwitterLength = 12 + linkTwitterLength + hashtags.length; // "\n\nRead more: " is 12 chars
+            const techBody = truncateText(cleanUpdateText, 280 - techIntro.length - footerTwitterLength);
             tweetText = `${techIntro}${techBody}\n\nRead more: ${link}${hashtags}`;
             break;
-            
+        }
         case 'standard':
-        default:
+        default: {
             const stdIntro = `BigQuery Update (${date}): `;
-            const stdBody = truncateText(cleanUpdateText, 280 - stdIntro.length - link.length - hashtags.length - 8);
+            const footerTwitterLength = 7 + linkTwitterLength + hashtags.length; // "\n\nLink: " is 7 chars
+            const stdBody = truncateText(cleanUpdateText, 280 - stdIntro.length - footerTwitterLength);
             tweetText = `${stdIntro}${stdBody}\n\nLink: ${link}${hashtags}`;
             break;
+        }
     }
     
     elements.tweetTextarea.value = tweetText;
-    updateTweetProgress(tweetText.length);
+    updateTweetProgress(calculateTwitterLength(tweetText));
 }
 
 // Intelligent Truncator helper to keep Tweet within 280 character limit
@@ -517,7 +565,7 @@ function truncateText(text, maxChars) {
 }
 
 function handleTweetTextChange(e) {
-    updateTweetProgress(e.target.value.length);
+    updateTweetProgress(calculateTwitterLength(e.target.value));
 }
 
 // Update Tweet Progress indicator
@@ -582,7 +630,7 @@ async function copyTweetToClipboard() {
 // Trigger Web Intent sharing
 function shareOnX() {
     const tweetText = elements.tweetTextarea.value;
-    if (tweetText.length > 280) {
+    if (calculateTwitterLength(tweetText) > 280) {
         showToast('Tweet exceeds character limit!', true);
         return;
     }
