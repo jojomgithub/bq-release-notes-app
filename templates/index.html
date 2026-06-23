@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BigQuery Release Notes Hub</title>
+    
+    <!-- Google Fonts: Outfit & Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- CSS Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Lucide Icons CDN -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Top Glow Effects -->
+        <div class="glow-orb orb-1"></div>
+        <div class="glow-orb orb-2"></div>
+
+        <!-- Sidebar / Navigation -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo-container">
+                    <div class="logo-icon">
+                        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5">
+                            <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <span class="logo-text">BQ Notes</span>
+                </div>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-filter="all">
+                    <i data-lucide="layout-grid"></i>
+                    <span>All Updates</span>
+                </button>
+                <button class="nav-item" data-filter="feature">
+                    <i data-lucide="sparkles" class="color-feature"></i>
+                    <span>Features</span>
+                </button>
+                <button class="nav-item" data-filter="changed">
+                    <i data-lucide="git-commit" class="color-changed"></i>
+                    <span>Changes</span>
+                </button>
+                <button class="nav-item" data-filter="deprecation">
+                    <i data-lucide="alert-triangle" class="color-deprecation"></i>
+                    <span>Deprecations</span>
+                </button>
+                <button class="nav-item" data-filter="announcement">
+                    <i data-lucide="megaphone" class="color-announcement"></i>
+                    <span>Announcements</span>
+                </button>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="tech-badge">
+                    <div class="pulse-dot"></div>
+                    <span>Flask &amp; Vanilla JS</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="content-header">
+                <div class="header-titles">
+                    <h1>BigQuery Release Notes</h1>
+                    <p class="subtitle">Stay updated with the latest features, improvements, and changes in Google BigQuery.</p>
+                </div>
+                
+                <div class="header-actions">
+                    <div class="search-wrapper">
+                        <i data-lucide="search" class="search-icon"></i>
+                        <input type="text" id="search-input" placeholder="Search updates...">
+                    </div>
+                    
+                    <button id="refresh-btn" class="btn-refresh" title="Refresh Release Notes">
+                        <i data-lucide="rotate-cw" id="refresh-icon"></i>
+                        <span class="btn-text">Refresh</span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Bar -->
+            <section class="stats-bar">
+                <div class="stat-card">
+                    <span class="stat-label">Total Updates</span>
+                    <span class="stat-value" id="stat-total">-</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Features</span>
+                    <span class="stat-value text-feature" id="stat-features">-</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-label">Last Checked</span>
+                    <span class="stat-value" id="stat-last-checked">-</span>
+                </div>
+            </section>
+
+            <!-- Feed Section -->
+            <section class="feed-container">
+                <div id="loading-state" class="loading-state">
+                    <div class="double-spinner">
+                        <div class="spinner-circle spinner-1"></div>
+                        <div class="spinner-circle spinner-2"></div>
+                    </div>
+                    <p>Fetching BigQuery release notes...</p>
+                </div>
+
+                <div id="error-state" class="error-state hidden">
+                    <i data-lucide="alert-circle" class="error-icon"></i>
+                    <h3>Failed to Load Feed</h3>
+                    <p id="error-message">Something went wrong while fetching the latest notes.</p>
+                    <button id="retry-btn" class="btn-retry">Try Again</button>
+                </div>
+
+                <div id="empty-state" class="empty-state hidden">
+                    <i data-lucide="inbox" class="empty-icon"></i>
+                    <h3>No Updates Found</h3>
+                    <p>No release notes match your active search or filter criteria.</p>
+                </div>
+
+                <div id="feed-timeline" class="feed-timeline hidden">
+                    <!-- Day Groupings and cards will be inserted here dynamically -->
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Tweet Composer Modal / Drawer -->
+    <div id="tweet-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <button class="modal-close" id="modal-close-btn">
+                <i data-lucide="x"></i>
+            </button>
+            
+            <div class="modal-header">
+                <h2>Share on X / Twitter</h2>
+                <p>Select a style, customize your message, and tweet this update.</p>
+            </div>
+            
+            <div class="modal-body">
+                <!-- Selected Update Preview -->
+                <div class="selected-update-preview">
+                    <div class="preview-meta">
+                        <span class="badge" id="preview-badge">Feature</span>
+                        <span class="date" id="preview-date">June 22, 2026</span>
+                    </div>
+                    <div class="preview-content-text" id="preview-content">
+                        <!-- Short text of selected update -->
+                    </div>
+                </div>
+
+                <!-- Template Selector -->
+                <div class="template-selector">
+                    <label class="section-label">Tweet Style</label>
+                    <div class="style-grid">
+                        <button class="style-btn active" data-style="standard">
+                            <i data-lucide="text-align-left"></i>
+                            <span>Standard</span>
+                        </button>
+                        <button class="style-btn" data-style="excited">
+                            <i data-lucide="rocket"></i>
+                            <span>Excited</span>
+                        </button>
+                        <button class="style-btn" data-style="bullet">
+                            <i data-lucide="list"></i>
+                            <span>Summary</span>
+                        </button>
+                        <button class="style-btn" data-style="technical">
+                            <i data-lucide="terminal"></i>
+                            <span>Technical</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Tweet Composer Textarea -->
+                <div class="composer-container">
+                    <label for="tweet-textarea" class="section-label">Compose Tweet</label>
+                    <textarea id="tweet-textarea" rows="5" placeholder="What's happening?"></textarea>
+                    
+                    <div class="composer-meta">
+                        <div class="char-counter" id="char-counter">
+                            <svg class="progress-ring" width="24" height="24">
+                                <circle class="progress-ring__circle-bg" stroke="rgba(255,255,255,0.1)" stroke-width="2.5" fill="transparent" r="10" cx="12" cy="12" />
+                                <circle class="progress-ring__circle" id="char-progress" stroke="var(--accent-indigo)" stroke-width="2.5" fill="transparent" r="10" cx="12" cy="12" />
+                            </svg>
+                            <span id="char-count-text">280</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Social Mock Feed Preview -->
+                <div class="mock-feed-preview">
+                    <label class="section-label">Preview Post</label>
+                    <div class="mock-tweet-card">
+                        <div class="mock-tweet-header">
+                            <div class="mock-avatar">
+                                <i data-lucide="user"></i>
+                            </div>
+                            <div class="mock-user-details">
+                                <span class="mock-name">You</span>
+                                <span class="mock-handle">@username</span>
+                            </div>
+                            <span class="mock-dot">&middot;</span>
+                            <span class="mock-time">Just now</span>
+                        </div>
+                        <div class="mock-tweet-text" id="mock-tweet-text">
+                            Tweet text preview goes here...
+                        </div>
+                        <div class="mock-tweet-actions">
+                            <span><i data-lucide="message-circle" class="mock-action-icon"></i> 0</span>
+                            <span><i data-lucide="repeat" class="mock-action-icon"></i> 0</span>
+                            <span><i data-lucide="heart" class="mock-action-icon"></i> 0</span>
+                            <span><i data-lucide="bar-chart-2" class="mock-action-icon"></i> 0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer">
+                <button class="btn-secondary" id="btn-copy-tweet">
+                    <i data-lucide="copy" id="copy-icon"></i>
+                    <span id="copy-btn-text">Copy Text</span>
+                </button>
+                <button class="btn-primary" id="btn-share-x">
+                    <i data-lucide="twitter"></i>
+                    <span>Post on X</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Toast -->
+    <div id="toast" class="toast hidden">
+        <i data-lucide="check-circle" class="toast-icon"></i>
+        <span id="toast-message">Success message</span>
+    </div>
+
+    <!-- Setup client scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
